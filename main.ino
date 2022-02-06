@@ -40,7 +40,6 @@ int RMotorBackwardPin = 26;
 #define ANOTHER_CHARACTERISTIC_UUID "8fa2e117-e431-4dab-ab5a-24ba2067983d"
 #define BEGIN_CHARACTERISTIC_UUID "e4085858-2331-4b31-af03-f485127f2e29"
 
-int count = 0;
 bool device_connected = false;
 BLEServer *pServer;
 BLEService *pService;
@@ -100,7 +99,7 @@ void setup() {
   pCharacteristic->setValue("Hello World says Mani");
 
   
-// Value or Charater #2 for exporting to website 
+  // Value or Charater #2 for exporting to website 
   anotherCharacteristic = pService->createCharacteristic(
                                          ANOTHER_CHARACTERISTIC_UUID,
                                          BLECharacteristic::PROPERTY_READ |
@@ -109,14 +108,14 @@ void setup() {
   anotherCharacteristic->setValue("Hello World says Pedro");
 
 
-// Value or Charater #3 for exporting to website 
+  // Value or Charater #3 for exporting to website 
   otherCharacteristic = pService->createCharacteristic(
                                          OTHER_CHARACTERISTIC_UUID,
                                          BLECharacteristic::PROPERTY_READ |
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-// Value or Charater #4 for exporting to website 
+  // Value or Charater #4 for exporting to website 
   beginCharacteristic = pService->createCharacteristic(
                                          BEGIN_CHARACTERISTIC_UUID,
                                          BLECharacteristic::PROPERTY_READ |
@@ -135,68 +134,57 @@ void setup() {
 }
 
 void loop() {
-  while (true) {
-    std::basic_string<char> value = beginCharacteristic->getValue();
-    String realValue = value.c_str();
-    
-    // Value is A = start, Value is B = stop
-    if (realValue == "a") {
-      Serial.println("Value is A");
-    }
+  std::basic_string<char> value = beginCharacteristic->getValue();
+  String realValue = value.c_str();
 
-    if (realValue == "b") {
-      Serial.println("Value is B");
-    }
+  // Value is A = start, Value is B = stop
+  if (realValue == "a") {
+    Serial.println("Process stopped");
   }
 
-  if (false) {
-  otherCharacteristic->getValue();
-  distance = ultrasonic.measureDistanceCm(); //Use 'CM' for centimeters or 'INC' for inches
-  distance = ultrasonic.measureDistanceCm(); //Use 'CM' for centimeters or 'INC' for inches
-  Serial.println("Distance: ");
-  Serial.println(distance);
-  Serial.println(" cm ");
-  otherCharacteristic->setValue(distance);
-  otherCharacteristic->notify();
+  if (realValue == "b") {
+    otherCharacteristic->getValue();
+    distance = ultrasonic.measureDistanceCm(); //Use 'CM' for centimeters or 'INC' for inches
+    distance = ultrasonic.measureDistanceCm(); //Use 'CM' for centimeters or 'INC' for inches
+    Serial.println("Distance: ");
+    Serial.println(distance);
+    Serial.println(" cm ");
+    otherCharacteristic->setValue(distance);
+    otherCharacteristic->notify();
 
-  //Unltrasonic sensor 
-  if (distance > -1 && distance < 15){
-    stop_now();
-    pCharacteristic->setValue("stopping");
-    delay(500);
-    goBackward();
-    pCharacteristic->setValue("moving backwards");
-    delay(500);
-    stop_now();
-    delay(500);
-    
-    if(random(0, 2) == 0) {
-      goLeft();
-      pCharacteristic->setValue("moving left");
+    if (distance > -1 && distance < 15){
+      stop_now();
+      pCharacteristic->setValue("stopping");
+      delay(500);
+      goBackward();
+      pCharacteristic->setValue("moving backwards");
+      delay(500);
+      stop_now();
+      delay(500);
+
+      if (random(0, 2) == 0) {
+        goLeft();
+        pCharacteristic->setValue("moving left");
+      } else {
+        goRight();
+        pCharacteristic->setValue("moving right");
+      }
+
+      delay(500);
+      stop_now();
+      pCharacteristic->setValue("stopping");
+      delay(700);
     } else {
-      goRight();
-      pCharacteristic->setValue("moving right");
+      goForward();
+      pCharacteristic->setValue("moving forward");
     }
-    
-    delay(500);
-    stop_now();
-    pCharacteristic->setValue("stopping");
-    delay(700);
-  } else {
-    goForward();
-    pCharacteristic->setValue("moving forward");
-  }
-   
-  pCharacteristic->notify();
-  if (device_connected) {
-    Serial.println("Device connected!");
-  } else {
-    Serial.println("Device not connected!");
-  }
-  
-  Serial.println("Test");
- 
-  count = count + 1;
+
+    pCharacteristic->notify();
+    if (device_connected) {
+      Serial.println("Device connected!");
+    } else {
+      Serial.println("Device not connected!");
+    }
   }
 }
 
